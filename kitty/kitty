@@ -1,0 +1,193 @@
+# vim:fileencoding=utf-8:ft=conf
+
+# _  ___ _   _
+#| |/ (_) |_| |_ _   _
+#| ' /| | __| __| | | |
+#| . \| | |_| |_| |_| |
+#|_|\_\_|\__|\__|\__, |
+#                |___/
+font_family MesloLGS Nerd Font
+#font_family Source Code Pro
+#bold_font        auto
+#italic_font      auto
+#bold_italic_font auto
+#font_size 12.0
+#
+#: Window Management
+
+# Kitty Mod
+kitty_mod alt
+
+# Clear Shortcut
+clear_all_shortcuts no
+
+# Clipboard
+map ctrl+shift+c copy_to_clipboard
+#map kitty_mod+c copy_to_clipboard
+map ctrl+shift+v paste_from_clipboard
+#Copy Current Line
+#map kitty_mod+ pipe @screen window vim -Rmn
+#map super+v             paste_from_clipboard
+map super+c             copy_to_clipboard
+# Windows
+map kitty_mod+enter new_window
+map kitty_mod+r start_resizing_window
+map kitty_mod+semicolon next_window
+map kitty_mod+j previous_window
+map kitty_mod+l move_window_to_top
+map kitty_mod+k move_window_to_bottom
+map kitty_mod+q close_window
+
+#map kitty_mod+y      launch mutt
+#map ctrl+alt+enter    launch --cwd=current
+
+# Tab
+map kitty_mod+shift+enter new_tab
+map kitty_mod+shift+q close_tab
+map kitty_mod+i set_tab_title
+map kitty_mod+tab next_tab
+map kitty_mod+shift+tab previous_tab
+
+#map kitty_mod+shift+L move_tab_forward
+#map kitty_mod+shift+H move_tab_backward
+
+map kitty_mod+1 goto_tab 1
+map kitty_mod+2 goto_tab 2
+map kitty_mod+3 goto_tab 3
+map kitty_mod+4 goto_tab 4
+map kitty_mod+5 goto_tab 5
+
+map kitty_mod+backspace next_layout
+#map ctrl+alt+t goto_layout tall
+#map ctrl+alt+s goto_layout stack
+#map mod+backspace layout_action rotate
+
+
+map kitty_mod+slash change_font_size all +2.0
+map kitty_mod+plus change_font_size all +2.0
+map kitty_mod+minus change_font_size all -2.0
+map kitty_mod+f1 change_font_size all 11.0
+
+# Miscellaneous
+map kitty_mod+shift+E edit_config_file
+map kitty_mod+shift+U kitten unicode_input
+
+
+#Cursor
+cursor #FEC925
+cursor_shape underline
+cursor_stop_blinking_after 15.0
+
+#Scrolling 
+scrollback_lines 150000
+map kitty_mod+up scroll_line_up
+map kitty_mod+left scroll_page_up
+map kitty_mod+right scroll_page_down
+#map kitty_mod+j scroll_line_down
+map kitty_mod+s show_scrollback
+scrollback_pager nvim -c 'setlocal ft=man nonumber nolist showtabline=0 foldcolumn=0' -c "autocmd VimEnter * normal G" -
+
+
+enabled_layouts tall,grid,fat,stack
+window_border_width 1.0
+draw_minimal_borders yes
+
+inactive_border_color  #FEC925
+active_border_color  #FEC925
+
+tab_bar_style powerline
+tab_separator "||"
+tab_switch_strategy previous
+tab_title_template {index}: {title}
+
+#tab_bar_background #000
+inactive_tab_foreground   #d0d0d0
+inactive_tab_background   #198bf7
+inactive_tab_font_style   bold-italic
+active_tab_background   #d0d0d0
+active_tab_foreground   #198bf7
+active_tab_font_style normal
+
+shell zsh
+editor nvim
+#Open urls 
+open_url_with default
+map kitty_mod+w kitten hints
+map kitty_mod+e edit_config_file
+#color=#FEC925
+#label_color=#D0D0D0
+#label_color=#00B4EB
+enable_audio_bell no
+background  #181a1f
+
+
+#background #011627
+#foreground #acb4c2
+#cursor #9ca1aa
+#color0 #1d3b53
+#color1 #fc514e
+#color2 #a1cd5e
+#color3 #e3d18a
+#color4 #82aaff
+#color5 #c792ea
+#color6 #7fdbca
+#color7 #a1aab8
+#color8 #7c8f8f
+#color9 #ff5874
+#color10 #21c7a8
+#color11 #ecc48d
+#color12 #82aaff
+#color13 #ae81ff
+#color14 #7fdbca
+#color15 #d6deeb
+#selection_background #b2ceee
+#selection_foreground #080808
+#
+#
+#
+## Onehalf Colorscheme for Kitty
+## Based on https://github.com/sonph/onehalf
+## By https://github.com/dbinary
+#
+#foreground            #dcdfe4
+#background            #282c34
+#selection_foreground  #000000
+#selection_background  #FFFACD
+#url_color             #0087BD
+#
+## black
+#color0   #282c34
+#color8   #5d677a
+#
+## red
+#color1   #e06c75
+#color9   #e06c75
+#
+## green
+#color2   #98c379
+#color10  #98c379
+#
+## yellow
+#color3   #e5c07b
+#color11  #e5c07b
+#
+## blue
+#color4  #61afef
+#color12 #61afef
+#
+## magenta
+#color5   #c678dd
+#color13  #c678dd
+#
+## cyan
+#color6   #56b6c2
+#color14  #56b6c2
+#
+## white
+#color7   #dcdfe4
+#color15  #dcdfe4
+#
+#
+#
+#
+#
