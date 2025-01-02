@@ -1225,8 +1225,6 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.opt.guifont = "JetBrainsMono Nerd Font:h12"
 
 
-
-
 -- One Dark color overrides
 local colors = {
     mono_1 = '#CDD5E4',
