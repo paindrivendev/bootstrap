@@ -493,10 +493,22 @@ setup_hibernation() {
 
 install_yay() {
     if ! command -v yay &> /dev/null; then
+        log "Installing yay dependencies..."
+        pacman -S --needed --noconfirm git base-devel go
+        
         log "Installing yay AUR helper..."
-        git clone https://aur.archlinux.org/yay-bin.git /tmp/yay-bin
-        (cd /tmp/yay-bin && sudo -u "$USERNAME" makepkg -si --noconfirm)
-        rm -rf /tmp/yay-bin
+        # Create temp directory with correct permissions
+        install -d -m 755 -o "$USERNAME" /tmp/yay-build
+        cd /tmp/yay-build
+        
+        # Clone and build as the non-root user
+        sudo -u "$USERNAME" git clone https://aur.archlinux.org/yay.git
+        cd yay
+        sudo -u "$USERNAME" makepkg -si --noconfirm
+        
+        # Clean up
+        cd /
+        rm -rf /tmp/yay-build
     else
         log "yay is already installed"
     fi
