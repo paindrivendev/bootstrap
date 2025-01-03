@@ -191,6 +191,11 @@ UTILITY_PACKAGES=(
     "zip"
     "trash-cli"
     "picom"
+    "thunar"
+    "thunar-volman"
+    "thunar-archive-plugin"
+    "arc-gtk-theme"
+    "arc-icon-theme"
     
     # GUI utilities
     "arandr"
@@ -411,6 +416,22 @@ setup_dotfiles() {
     fi
 }
 
+setup_theme() {
+    log "Configuring GTK theme..."
+    
+    # Set up GTK theme configuration
+    mkdir -p "/home/$USERNAME/.config/gtk-3.0"
+    cat > "/home/$USERNAME/.config/gtk-3.0/settings.ini" << EOL
+[Settings]
+gtk-theme-name=Arc-Dark
+gtk-icon-theme-name=Arc
+gtk-font-name=DejaVu Sans 11
+gtk-cursor-theme-name=Adwaita
+EOL
+    
+    chown -R "$USERNAME:$USERNAME" "/home/$USERNAME/.config/gtk-3.0"
+}
+
 setup_shell() {
     log "Setting up shell environment..."
     
@@ -465,8 +486,9 @@ main() {
     configure_bluetooth
     configure_udev
     
-    # Setup dotfiles and shell
+    # Setup dotfiles, theme and shell
     setup_dotfiles
+    setup_theme
     setup_shell
     
     log "Post-installation configuration completed successfully!"
