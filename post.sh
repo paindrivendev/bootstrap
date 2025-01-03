@@ -47,12 +47,9 @@ INTEL_PACKAGES=(
     "vulkan-intel"
     "intel-media-driver"
     "libva-intel-driver"
-    "intel-gpu-tools"
 )
 
 STORAGE_PACKAGES=(
-    "hdparm"
-    "smartmontools"
     "nvme-cli"
     "fstrim"
 )
@@ -60,7 +57,6 @@ STORAGE_PACKAGES=(
 POWER_PACKAGES=(
     "acpi"
     "acpid"
-    "thermald"
     "powertop"
     "tlp"
     "tlp-rdw"
@@ -194,6 +190,7 @@ UTILITY_PACKAGES=(
     "unzip"
     "zip"
     "trash-cli"
+    "picom"
     
     # GUI utilities
     "arandr"
@@ -222,12 +219,8 @@ DEVICE_MOUNT_PACKAGES=(
 
 # AUR packages
 AUR_PACKAGES=(
-    "picom-ibhagwan-git"
     "ttf-hack-nerd"
     "ttf-jetbrains-mono-nerd"
-    "nohang"
-    "auto-cpufreq"
-    "k9s"
     "brave-bin"
     "downgrade"
     "snapd"
@@ -237,6 +230,8 @@ AUR_PACKAGES=(
     "via-bin"
     "vial-appimage"
     "visual-studio-code-bin"
+    "google-cloud-cli"
+    "i3lock-color"
 )
 
 log() {
@@ -304,25 +299,6 @@ install_aur_packages() {
     done
 }
 
-setup_intel_graphics() {
-    log "Configuring Intel graphics..."
-    
-    if [ -d "/etc/X11" ]; then
-        mkdir -p /etc/X11/xorg.conf.d/
-        cat > /etc/X11/xorg.conf.d/20-intel.conf << EOL
-Section "Device"
-    Identifier  "Intel Graphics"
-    Driver      "intel"
-    Option      "TearFree" "true"
-    Option      "DRI" "3"
-    Option      "AccelMethod" "sna"
-EndSection
-EOL
-    else
-        warn "X11 not installed yet, skipping Intel graphics configuration"
-    fi
-}
-
 setup_thinkpad() {
     log "Configuring ThinkPad-specific settings..."
     
@@ -342,18 +318,6 @@ EOL
     systemctl enable tlp thermald throttled
 }
 
-setup_ssd_optimizations() {
-    log "Configuring SSD optimizations..."
-    
-    systemctl enable fstrim.timer
-    
-    # Optimize mount options
-    if [ -f "/etc/fstab" ]; then
-        cp /etc/fstab /etc/fstab.backup
-        sed -i 's/relatime/noatime,nodiratime/g' /etc/fstab
-    fi
-}
-
 setup_shell_config() {
     log "Configuring shell environment..."
     
@@ -369,7 +333,7 @@ setup_shell_config() {
 configure_services() {
     log "Configuring system services..."
     
-    systemctl --user enable pipewire.service pipewire-pulse.service wireplumber.service
+    # systemctl --user enable pipewire.service pipewire-pulse.service wireplumber.service
     
     systemctl enable bluetooth acpid thermald docker fstrim.timer fwupd
     
@@ -394,22 +358,92 @@ SUBSYSTEM=="usb", ENV{ID_MTP_DEVICE}=="1", MODE="0666"
 EOL
 }
 
+setup_dotfiles() {
+    log "Setting up dotfiles..."
+    
+    local dotfiles_repo="https://github.com/paindrivendev/bootstrap.git"
+    local dotfiles_dir="/home/$USERNAME/.dotfiles"
+    
+    # Clone dotfiles repository
+    if [ ! -d "$dotfiles_dir" ]; then
+        sudo -u "$USERNAME" git clone "$dotfiles_repo" "$dotfiles_dir"
+    fi
+    
+    # Create necessary directories
+    mkdir -p "/home/$USERNAME/.config"
+    
+    # Create symlinks
+    local config_files=(
+        ".tmux.conf"
+        ".zshrc"
+        ".zprofile"
+        ".xinitrc"
+        ".Xresources"
+        ".bash_logout"
+        ".bash_profile"
+        ".bashrc"
+        ".solargraph.yml"
+    )
+    
+    for file in "${config_files[@]}"; do
+        if [ -f "$dotfiles_dir/$file" ]; then
+            ln -sf "$dotfiles_dir/$file" "/home/$USERNAME/$file"
+        fi
+    done
+    
+    # Link .config directories
+    local config_dirs=(
+        "i3"
+        "kitty"
+        "nvim"
+        "polybar"
+    )
+    
+    for dir in "${config_dirs[@]}"; do
+        if [ -d "$dotfiles_dir/.config/$dir" ]; then
+            ln -sf "$dotfiles_dir/.config/$dir" "/home/$USERNAME/.config/$dir"
+        fi
+    done
+    
+    # Link picom config
+    if [ -f "$dotfiles_dir/.config/picom.conf" ]; then
+        ln -sf "$dotfiles_dir/.config/picom.conf" "/home/$USERNAME/.config/picom.conf"
+    fi
+}
+
+setup_shell() {
+    log "Setting up shell environment..."
+    
+    # Change default shell to zsh
+    chsh -s "$(which zsh)" "$USERNAME"
+    
+    # Install antigen
+    curl -L git.io/antigen > "/home/$USERNAME/antigen.zsh"
+    
+    # Setup tmux plugin manager
+    local tpm_dir="/home/$USERNAME/.tmux/plugins/tpm"
+    if [ ! -d "$tpm_dir" ]; then
+        sudo -u "$USERNAME" git clone https://github.com/tmux-plugins/tpm "$tpm_dir"
+    fi
+    
+    # Fix permissions
+    chown -R "$USERNAME:$USERNAME" "/home/$USERNAME"
+}
+
 main() {
     check_root
     
     log "Starting post-installation configuration..."
     
-    # Install yay first
     install_yay
     
-    # System update
+    # System update and package installation
     log "Updating system..."
     pacman -Syu --noconfirm || warn "System upgrade failed, continuing anyway..."
     
-    # Install regular packages
-    log "Installing regular packages..."
+    # Install packages
     install_packages "${SYSTEM_BASE[@]}"
-    install_packages "${THINKPAD_PACKAGES[@]}"
+    # install_packages "${THINKPAD_PACKAGES[@]}"
     install_packages "${INTEL_PACKAGES[@]}"
     install_packages "${STORAGE_PACKAGES[@]}"
     install_packages "${POWER_PACKAGES[@]}"
@@ -424,20 +458,23 @@ main() {
     install_packages "${UTILITY_PACKAGES[@]}"
     install_packages "${DEVICE_MOUNT_PACKAGES[@]}"
     
-    # Install AUR packages with single password prompt
     install_aur_packages
     
-    # Configure hardware and services
-    setup_intel_graphics
-    setup_thinkpad
-    setup_ssd_optimizations
+    # Configure system
     configure_services
     configure_bluetooth
     configure_udev
-    setup_shell_config
+    
+    # Setup dotfiles and shell
+    setup_dotfiles
+    setup_shell
     
     log "Post-installation configuration completed successfully!"
+    log "Please restart your session to apply all changes."
+    log "After login, run: systemctl --user enable pipewire.service pipewire-pulse.service wireplumber.service"
 }
 
+# Run After
+# systemctl --user enable pipewire.service pipewire-pulse.service wireplumber.service
 # Execute main function
 main "$@"
